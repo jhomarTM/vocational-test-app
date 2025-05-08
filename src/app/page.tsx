@@ -1,41 +1,50 @@
-"use client";
-import { useState } from "react";
-import { Button } from "primereact/button";
-import { InputText } from "primereact/inputtext";
-import { Badge } from "primereact/badge";
-import { Chip } from "primereact/chip";
-import { Skeleton } from "primereact/skeleton";
+'use client';
+
+import Slides from './components/Slides';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  const [count, setCount] = useState(0);
+  const router = useRouter();
+
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen gap-4">
-      <h1>Next.js + PrimeReact + TailwindCSS</h1>
-      <div>
-        <h2>Demo app showing PrimeReact + Tailwind CSS in unstyled mode</h2>
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#181F2B] to-[#0B1120] text-white relative overflow-hidden">
+      {/* Carrusel superior */}
+      <div className="w-full mt-4">
+        <Slides />
       </div>
-      <div className="card">
-        <Button
-          icon="pi pi-plus"
-          className="mr-2"
-          label="Increment"
-          onClick={() => setCount((count) => count + 1)}
-        ></Button>
-        <InputText value={count.toString()} />
+
+      {/* Hero principal */}
+      <div className="flex flex-row items-center justify-center w-full max-w-5xl mx-auto py-12 relative z-10">
+        {/* Rocket a la izquierda */}
+        <img
+          src="/assets/img/hero/rocket.png"
+          alt="Rocket"
+          className="w-70 h-70 object-contain -mt-8 mr-4"
+          style={{ zIndex: 2 }}
+        />
+        {/* Texto y botón centrados */}
+        <div className="flex flex-col items-center justify-center flex-1 text-center">
+          <h1 className="text-5xl font-bold mb-2 text-white">Diseña tu Futuro</h1>
+          <h2 className="text-2xl font-semibold mb-6 text-gray-300">
+            Responde, explora y encuentra tu vocación
+          </h2>
+          <button
+            className="bg-[#F47B4B] hover:bg-[#e96a36] text-white font-bold py-3 px-8 rounded-xl text-lg shadow-lg transition cursor-pointer"
+            onClick={() => router.push('/questionnaire')}
+          >
+            Comienza a conocerte
+          </button>
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Next and React logos to learn more
-      </p>
-      <Badge value="12" severity="warning"></Badge>
-      <Chip label="Thriller" removable />
-      <Chip label="Google" icon="pi pi-google" />
-      <div>
-        <h5>Rounded</h5>
-        <Skeleton className="mb-2" borderRadius="16px"></Skeleton>
-        <Skeleton width="10rem" className="mb-2" borderRadius="16px"></Skeleton>
-        <Skeleton width="5rem" borderRadius="16px" className="mb-2"></Skeleton>
-        <Skeleton height="2rem" className="mb-2" borderRadius="16px"></Skeleton>
-        <Skeleton width="10rem" height="4rem" borderRadius="16px"></Skeleton>
+
+      {/* Carrusel inferior */}
+      <div className="w-full mt-4">
+        <Slides reverse />
+      </div>
+
+      {/* Fondo decorativo opcional */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {/* Puedes agregar aquí SVGs, imágenes de fondo, etc. */}
       </div>
     </main>
   );
