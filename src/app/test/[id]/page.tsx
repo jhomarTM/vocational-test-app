@@ -14,6 +14,26 @@ export default function TestPage() {
   const [answers, setAnswers] = useState<(string | null)[]>([]);
   const [showModal, setShowModal] = useState(false);
 
+  // Resultados predefinidos basados en el tipo de test
+  const getTestResults = (testId: string, answers: (string | null)[]) => {
+    // Ejemplo de resultados para test de personalidad
+    if (testId === 'personality') {
+      return {
+        amabilidad: 85,
+        extroversion: 70,
+        responsabilidad: 90,
+        estabilidadEmocional: 75,
+      };
+    }
+    // Ejemplo de resultados para test vocacional
+    return {
+      tecnologia: 92,
+      ciencias: 85,
+      artes: 65,
+      humanidades: 78,
+    };
+  };
+
   useEffect(() => {
     const currentTest = testData.tests.find(t => t.route === `/test/${params.id}`);
     if (currentTest) {
@@ -36,11 +56,14 @@ export default function TestPage() {
     if (current < test.questions.length - 1) {
       setCurrent(current + 1);
     } else {
-      // Guardar respuestas en localStorage
+      // Calcular y guardar resultados
+      const results = getTestResults(test.id, updated);
       const testResults = {
         testId: test.id,
         testName: test.name,
-        answers: updated
+        answers: updated,
+        results: results,
+        completedAt: new Date().toISOString()
       };
       localStorage.setItem(`test_${test.id}_results`, JSON.stringify(testResults));
       setShowModal(true);
@@ -60,7 +83,7 @@ export default function TestPage() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    router.push('/vocational-test');
+    router.push(`/results/${test.id}`); // Redirigir a la página de resultados
   };
 
   return (
@@ -143,4 +166,4 @@ export default function TestPage() {
       </div>
     </div>
   );
-} 
+}

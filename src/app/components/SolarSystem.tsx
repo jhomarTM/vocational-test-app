@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import CardInfo from "./CardInfo";
 import testData from "../data/test-questions.json";
@@ -9,19 +9,29 @@ interface Planet {
   progress: number;
   color: string;
   route: string;
+  description?: string;
 }
 
-const planets: Planet[] = testData.tests.map((test, index) => ({
-  name: test.name,
-  progress: 0,
-  color: ["#7be495", "#4f8cff", "#ffb347", "#ff6f69"][index],
-  route: test.route
-}));
+interface SolarSystemProps {
+  data?: Planet[];
+  onLearnMore?: (result: any) => void;
+}
 
-const SolarSystem: React.FC = () => {
+const SolarSystem: React.FC<SolarSystemProps> = ({ data, onLearnMore }) => {
   const ref = useRef<SVGSVGElement | null>(null);
   const [planetPositions, setPlanetPositions] = useState<{x: number, y: number}[]>([]);
   const [svgSize, setSvgSize] = useState({ width: 900, height: 900 });
+
+  // Memoize planets data to prevent unnecessary recalculations
+  const planets = useMemo(() => {
+    return data || testData.tests.map((test, index) => ({
+      name: test.name,
+      progress: 0,
+      color: ["#7be495", "#4f8cff", "#ffb347", "#ff6f69"][index],
+      route: test.route,
+      description: undefined // Agregamos la propiedad description
+    }));
+  }, [data]);
 
   useEffect(() => {
     // Calcula el radio máximo de las órbitas
@@ -112,7 +122,7 @@ const SolarSystem: React.FC = () => {
       `);
 
     setSvgSize({ width, height });
-  }, []);
+  }, [planets.length]); // Only re-run if the number of planets changes
 
   // Renderizar las cards usando las posiciones calculadas
   return (
@@ -174,6 +184,8 @@ const SolarSystem: React.FC = () => {
             name={planets[i].name}
             progress={planets[i].progress}
             route={planets[i].route}
+            description={planets[i].description}
+            onLearnMore={onLearnMore}
             style={{
               left: i < 2 ? pos.x - 320 : pos.x + 60,
               top: pos.y - 30,
@@ -187,4 +199,4 @@ const SolarSystem: React.FC = () => {
   );
 };
 
-export default SolarSystem; 
+export default SolarSystem;

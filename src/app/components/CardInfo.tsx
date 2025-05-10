@@ -6,10 +6,23 @@ interface CardInfoProps {
   progress: number;
   route: string;
   style?: React.CSSProperties;
+  description?: string;
+  onLearnMore?: (result: any) => void;
 }
 
-const CardInfo: React.FC<CardInfoProps> = ({ name, progress, route, style }) => {
+const CardInfo: React.FC<CardInfoProps> = ({ name, progress, route, style, description, onLearnMore }) => {
   const router = useRouter();
+
+  const handleClick = () => {
+    if (onLearnMore && description) {
+      // Si tenemos onLearnMore y description, mostramos el modal
+      onLearnMore({ name, progress, description });
+    } else {
+      // Si no, navegamos a la ruta del test
+      router.push(route);
+    }
+  };
+
   return (
     <div
       style={{
@@ -43,7 +56,7 @@ const CardInfo: React.FC<CardInfoProps> = ({ name, progress, route, style }) => 
       <div style={{ fontWeight: "bold", fontSize: 16, color: "#222", whiteSpace: "nowrap", overflow: "auto" }}>{name}</div>
       <div
         style={{ color: "#64748b", fontSize: 12, textDecoration: "underline", cursor: "pointer" }}
-        onClick={() => router.push(route)}
+        onClick={handleClick}
       >
         Saber más &gt;
       </div>
@@ -51,4 +64,4 @@ const CardInfo: React.FC<CardInfoProps> = ({ name, progress, route, style }) => 
   );
 };
 
-export default CardInfo; 
+export default CardInfo;
