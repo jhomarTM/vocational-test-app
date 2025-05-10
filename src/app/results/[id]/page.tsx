@@ -2,7 +2,7 @@
 
 import SolarSystem from '../../components/SolarSystem';
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 interface ResultDetail {
     name: string;
@@ -12,6 +12,7 @@ interface ResultDetail {
 
 export default function ResultsPage() {
     const params = useParams();
+    const router = useRouter();
     const [testName, setTestName] = useState('');
     const [results, setResults] = useState<{
         name: string;
@@ -85,6 +86,12 @@ export default function ResultsPage() {
                 textAlign: "center"
             }}>
                 <h1 style={{ fontSize: 55, fontWeight: 700, color: "#fff", marginBottom: 5 }}>{testName}</h1>
+                <button
+                    onClick={() => router.push('/vocational-test')}
+                    className="mt-4 px-8 py-3 bg-[#E75C2C] text-white rounded-[.5rem] hover:bg-[#d04d23] transition-colors duration-200 text-lg font-medium"
+                >
+                    Volver a universo principal
+                </button>
             </div>
 
             {/* Modal de detalles */}

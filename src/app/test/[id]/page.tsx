@@ -75,11 +75,13 @@ export default function TestPage() {
   };
 
   const handleSkip = () => {
-    const updated = [...answers];
-    updated[current] = null;
-    setAnswers(updated);
-    if (current < test.questions.length - 1) setCurrent(current + 1);
-  };
+    if (current < test.questions.length - 1) {
+        setCurrent(current + 1);
+        const updated = [...answers];
+        updated[current] = null;
+        setAnswers(updated);
+    }
+};
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -151,16 +153,24 @@ export default function TestPage() {
             ))}
           </div>
           <div className="mt-auto">
-            <button
-              onClick={handleBack}
-              disabled={current === 0}
-              className={`font-semibold text-base flex items-center gap-1 transition-all duration-150
-                ${current === 0
-                  ? 'text-[#E75C2C] opacity-40 cursor-default'
-                  : 'text-[#E75C2C] cursor-pointer hover:bg-[#ffe6de] hover:text-[#b53d1a] rounded-lg px-2 py-1'}`}
-            >
-              <FontAwesomeIcon icon={faChevronLeft} /> Volver atrás
-            </button>
+            <div className="flex justify-between items-center w-full">
+              <button
+                onClick={handleBack}
+                disabled={current === 0}
+                className={`font-semibold text-base flex items-center gap-1 transition-all duration-150
+                  ${current === 0
+                    ? 'text-[#E75C2C] opacity-40 cursor-default'
+                    : 'text-[#E75C2C] cursor-pointer hover:bg-[#ffe6de] hover:text-[#b53d1a] rounded-lg px-2 py-1'}`}
+              >
+                <FontAwesomeIcon icon={faChevronLeft} /> Volver atrás
+              </button>
+              <button
+                onClick={handleSkip}
+                className="text-gray-500 hover:text-gray-700 font-medium"
+              >
+                Omitir pregunta
+              </button>
+            </div>
           </div>
         </div>
       </div>
