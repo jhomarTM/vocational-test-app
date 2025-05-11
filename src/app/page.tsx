@@ -6,19 +6,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faArrowRight, faFileAlt, faVideo, faCrown, faUser, faSignOutAlt, 
   faHome, faRoad, faCompass, faGraduationCap, faUserMd, faBars, faTimes,
-  faChevronDown, faChevronRight, faCheck, faCalendarAlt 
+  faChevronDown, faChevronRight, faCheck, faCalendarAlt, faCircleNotch,
+  faChevronLeft
 } from '@fortawesome/free-solid-svg-icons';
 import SolarSystem from './components/SolarSystem';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-
-// Definimos la interfaz para los tests
-interface Test {
-  route: string;
-  name: string;
-  description?: string;
-  progress?: number;
-  color?: string;
-}
 
 // Definir la interfaz para los elementos del menú con submenús
 interface MenuItem {
@@ -36,6 +28,25 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [showingSolarSystem, setShowingSolarSystem] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Lista de tests disponibles con progreso
+  const tests = [
+    { id: 'vocational', name: 'Descubre tu vocación', status: 'pendiente', progress: 20, icon: faCompass, desc: 'Explora qué te apasiona y hacia dónde te diriges' },
+    { id: 'personality', name: 'Conoce tu personalidad', status: 'pendiente', progress: 10, icon: faUser, desc: 'Descubre cómo tu forma de ser influye en tu futuro' },
+    { id: 'aptitude', name: 'Tus talentos únicos', status: 'pendiente', progress: 0, icon: faGraduationCap, desc: 'Identifica tus habilidades naturales y potencial' },
+    { id: 'values', name: 'Lo que realmente valoras', status: 'pendiente', progress: 5, icon: faFileAlt, desc: 'Explora qué es lo que más importa en tu vida profesional' }
+  ];
+  
+  // Calcular el progreso total basado en el avance de cada test
+  const calculateTotalProgress = () => {
+    if (tests.length === 0) return 0;
+    const totalProgressSum = tests.reduce((sum, test) => sum + test.progress, 0);
+    return Math.floor(totalProgressSum / tests.length);
+  };
 
   // Datos de la ruta de orientación del usuario
   const userRoadmap = {
@@ -46,24 +57,16 @@ export default function Home() {
     totalCapsulas: 5,
     recomendacionesGeneradas: false,
     siguientePaso: "test de personalidad",
-    progreso: 25 // porcentaje de progreso en la ruta
+    progreso: calculateTotalProgress() // ahora basado en el progreso de tests
   };
-  
-  // Lista de tests disponibles
-  const tests = [
-    { id: 'vocational', name: 'Test Vocacional', status: 'pendiente', icon: faCompass, desc: 'Descubre tus áreas de interés profesional' },
-    { id: 'personality', name: 'Test de Personalidad', status: 'pendiente', icon: faUser, desc: 'Conoce tus rasgos de personalidad y cómo influyen en tu carrera' },
-    { id: 'aptitude', name: 'Test de Aptitudes', status: 'pendiente', icon: faGraduationCap, desc: 'Identifica tus habilidades cognitivas y prácticas' },
-    { id: 'values', name: 'Test de Valores', status: 'pendiente', icon: faFileAlt, desc: 'Descubre qué valores son importantes para ti en el trabajo' }
-  ];
   
   // Lista de cápsulas de orientación
   const capsules = [
-    { id: 1, title: 'Cómo elegir carrera sin presión externa', type: 'básico', completed: true },
-    { id: 2, title: 'Conócete en 5 minutos', type: 'básico', completed: true },
+    { id: 1, title: 'Cómo elegir sin presiones externas', type: 'básico', completed: true },
+    { id: 2, title: 'Cinco minutos para conocerte mejor', type: 'básico', completed: true },
     { id: 3, title: 'Errores comunes al decidir tu futuro', type: 'básico', completed: false },
     { id: 4, title: 'Descubre tus fortalezas ocultas', type: 'premium', completed: false },
-    { id: 5, title: 'Tendencias del mercado laboral 2025', type: 'premium', completed: false }
+    { id: 5, title: 'El futuro del trabajo: ¿dónde encajas?', type: 'premium', completed: false }
   ];
   
   // Próximas asesorías (solo para mostrar en dashboard)
@@ -73,37 +76,70 @@ export default function Home() {
 
   // Estructura de menú de navegación
   const menuItems: MenuItem[] = [
-    { id: 'home', label: 'Inicio', icon: faHome, url: '/' },
-    { id: 'roadmap', label: 'Mi Ruta Profesional', icon: faRoad, url: '/roadmap' },
-    { id: 'tests', label: 'Tests', icon: faFileAlt },
-    { id: 'recommendations', label: 'Recomendaciones de Carrera', icon: faGraduationCap, url: '/recommendations' },
-    { id: 'capsules', label: 'Cápsulas de Orientación', icon: faVideo, url: '/capsules' },
-    { id: 'counseling', label: 'Asesorías con Psicólogos', icon: faUserMd, url: '/counseling' },
-    { id: 'premium', label: 'Explorar Premium', icon: faCrown, url: '/premium', highlight: true }
+    { id: 'home', label: 'Tu Espacio', icon: faHome },
+    { id: 'roadmap', label: 'Tu Camino Personal', icon: faRoad },
+    { id: 'tests', label: 'Descúbrete', icon: faFileAlt },
+    { id: 'recommendations', label: 'Carreras para Ti', icon: faGraduationCap },
+    { id: 'capsules', label: 'Inspírate', icon: faVideo },
+    { id: 'counseling', label: 'Habla con Expertos', icon: faUserMd },
+    { id: 'premium', label: 'Desbloquea Tu Potencial', icon: faCrown, highlight: true }
   ];
 
   // Función para manejar clics en elementos del menú
-  const handleMenuClick = (id: string, url?: string) => {
-    if (id.includes('test-') || id === 'tests') {
-      // Para los tests, activamos la sección principal de tests
-      setActiveSection('tests');
-    } else {
-      setActiveSection(id);
-    }
+  const handleMenuClick = (id: string) => {
+    // Activamos la sección correspondiente
+    setActiveSection(id);
     
     // Si el elemento tiene submenús, manejamos la expansión
     const menuItem = menuItems.find(item => item.id === id);
     if (menuItem && 'children' in menuItem) {
       setActiveSubmenu(activeSubmenu === id ? null : id);
-    } else if (url) {
-      // Si no hay submenús y hay una URL, navega a ella
-      router.push(url);
     }
   };
 
-  // Manejador para el botón "Comenzar Test"
-  const handleStartTest = (test: Test) => {
-    router.push(test.route);
+  // Manejador para el botón "Comenzar ahora" con animación espacial
+  const handleStartNowClick = () => {
+    // Mostrar loader
+    setIsLoading(true);
+    setLoadingProgress(0);
+
+    // Simular progreso de carga
+    const interval = setInterval(() => {
+      setLoadingProgress(prev => {
+        const next = prev + Math.random() * 5; // incremento aleatorio para hacer la carga más natural
+        return next > 100 ? 100 : next;
+      });
+    }, 50);
+
+    // Cuando termina la carga
+    setTimeout(() => {
+      clearInterval(interval);
+      setLoadingProgress(100);
+      
+      // Mostrar brevemente el 100% antes de cambiar
+      setTimeout(() => {
+        setShowingSolarSystem(true);
+        
+        // Después de iniciar la transición fade in, cambiar sección
+        setTimeout(() => {
+          setActiveSection('tests');
+          window.scrollTo(0, 0);
+          
+          // Finalmente quitar el loader después de la transición
+          setTimeout(() => {
+            setIsLoading(false);
+            setShowingSolarSystem(false);
+          }, 500);
+        }, 500);
+      }, 300);
+    }, 2000);
+  };
+  
+  // Manejador para tests del SolarSystem
+  const handleStartTest = () => {
+    // En una aplicación real, aquí navegaríamos a la ruta del test
+    // Por ahora, mostraremos el mismo efecto de portal espacial
+    handleStartNowClick();
   };
 
   const toggleMenu = () => {
@@ -121,7 +157,7 @@ export default function Home() {
               <div>
                 <h2 className="text-xl font-bold flex items-center">
                   <FontAwesomeIcon icon={faRoad} className="text-blue-400 mr-3" />
-                  Mi Ruta Profesional
+                  Tu Camino Personal
                 </h2>
                 <p className="text-gray-400 text-sm mt-1">
                   Tu progreso en el camino hacia la orientación vocacional
@@ -148,11 +184,12 @@ export default function Home() {
                 <p className="text-blue-300 text-sm">Realiza tu {userRoadmap.siguientePaso} para avanzar en tu ruta</p>
               </div>
               <button 
-                onClick={() => router.push('/test/personality')}
-                className="mt-3 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg flex items-center"
+                id="startNowButton"
+                onClick={handleStartNowClick}
+                className="mt-3 md:mt-0 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 active:scale-95 text-white text-sm font-medium py-2 px-4 rounded-lg flex items-center transition-all duration-200 ease-in-out transform hover:shadow-lg hover:-translate-y-1 group"
               >
                 <span>Comenzar ahora</span>
-                <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+                <FontAwesomeIcon icon={faArrowRight} className="ml-2 group-hover:translate-x-1 transition-transform duration-200" />
               </button>
             </div>
           </div>
@@ -183,10 +220,10 @@ export default function Home() {
                 <li>
                   <button 
                     onClick={() => handleMenuClick('tests')}
-                    className="text-xs text-blue-400 hover:text-blue-300 mt-1 flex items-center"
+                    className="text-xs text-blue-400 hover:text-blue-300 hover:underline mt-1 flex items-center transition-all duration-200 group"
                   >
                     <span>Ver todos los tests</span>
-                    <FontAwesomeIcon icon={faArrowRight} className="ml-1 text-xs" />
+                    <FontAwesomeIcon icon={faArrowRight} className="ml-1 text-xs group-hover:translate-x-1 transition-transform duration-200" />
                   </button>
                 </li>
               </ul>
@@ -223,10 +260,10 @@ export default function Home() {
                 <li>
                   <button 
                     onClick={() => handleMenuClick('capsules')}
-                    className="text-xs text-blue-400 hover:text-blue-300 mt-1 flex items-center"
+                    className="text-xs text-blue-400 hover:text-blue-300 hover:underline mt-1 flex items-center transition-all duration-200 group"
                   >
                     <span>Explorar más cápsulas</span>
-                    <FontAwesomeIcon icon={faArrowRight} className="ml-1 text-xs" />
+                    <FontAwesomeIcon icon={faArrowRight} className="ml-1 text-xs group-hover:translate-x-1 transition-transform duration-200" />
                   </button>
                 </li>
               </ul>
@@ -257,7 +294,7 @@ export default function Home() {
                 </div>
                 <button 
                   onClick={() => handleMenuClick('counseling')}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2 px-4 rounded-lg"
+                  className="w-full bg-purple-600 hover:bg-purple-500 active:bg-purple-700 active:scale-95 text-white text-sm font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out transform hover:shadow-md"
                 >
                   Ver detalles
                 </button>
@@ -275,7 +312,7 @@ export default function Home() {
                   <p className="text-gray-400 text-sm mb-3">No tienes asesorías programadas</p>
                   <button 
                     onClick={() => handleMenuClick('counseling')}
-                    className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2 px-4 rounded-lg"
+                    className="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 active:scale-95 text-white text-sm font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out transform hover:shadow-md"
                   >
                     Reservar sesión
                   </button>
@@ -298,10 +335,10 @@ export default function Home() {
               </div>
               <button 
                 onClick={() => handleMenuClick('premium')}
-                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-3 px-6 rounded-xl shadow-md flex items-center"
+                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:from-amber-600 active:to-amber-700 active:scale-95 text-white font-bold py-3 px-6 rounded-xl shadow-md flex items-center transition-all duration-200 ease-in-out transform hover:shadow-lg hover:-translate-y-1 group"
               >
                 <span>Explorar Premium</span>
-                <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+                <FontAwesomeIcon icon={faArrowRight} className="ml-2 group-hover:translate-x-1 transition-transform duration-200" />
               </button>
             </div>
           </div>
@@ -336,13 +373,58 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-[#0B1120] text-white overflow-hidden">
+      {/* Loader Simplificado */}
+      {isLoading && (
+        <div className={`fixed inset-0 z-[100] bg-[#0B1120]/90 backdrop-blur-sm flex items-center justify-center transition-opacity duration-500 ${showingSolarSystem ? 'opacity-0' : 'opacity-100'}`}>
+          <div className="flex flex-col items-center justify-center text-center">
+            {/* Círculo de carga simple y simétrico */}
+            <div className="relative w-32 h-32 mb-8">
+              {/* Círculo exterior */}
+              <div className="absolute inset-0 rounded-full border-4 border-blue-500/30"></div>
+              
+              {/* Círculo de progreso */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                <circle 
+                  cx="50" 
+                  cy="50" 
+                  r="40" 
+                  fill="transparent" 
+                  stroke="#3b82f6" 
+                  strokeWidth="4"
+                  strokeDasharray="251.2"
+                  strokeDashoffset={251.2 - (251.2 * loadingProgress / 100)}
+                  transform="rotate(-90 50 50)"
+                  className="transition-all duration-300 ease-out"
+                />
+              </svg>
+              
+              {/* Icono central */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <FontAwesomeIcon 
+                  icon={faCircleNotch} 
+                  className="text-blue-400 text-3xl animate-spin"
+                />
+              </div>
+            </div>
+            
+            {/* Texto del loader */}
+            <h3 className="text-xl font-bold text-blue-300 mb-2">Preparando tu viaje</h3>
+            <p className="text-sm text-gray-400">
+              {loadingProgress < 100 
+                ? `${Math.floor(loadingProgress)}%` 
+                : '¡Listo para despegar!'}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar para móviles */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#131B2B] shadow-lg">
         <div className="flex justify-between items-center p-3">
           <div className="flex items-center">
-            <span className="text-lg font-bold">Brújula</span>
+            <span className="text-lg font-bold">Estelar</span>
           </div>
-          <button 
+          <button
             onClick={toggleMenu}
             className="p-2 rounded-lg hover:bg-[#1D2738]"
           >
@@ -359,150 +441,182 @@ export default function Home() {
         ></div>
       )}
 
-      {/* Sidebar */}
-      <div className={`
-        fixed md:static h-full z-50 bg-[#131B2B] border-r border-gray-800
-        transition-all duration-300 ease-in-out
-        ${menuOpen ? 'left-0' : '-left-64'} md:left-0
-        w-56 md:w-56
-      `}>
-        <div className="flex flex-col h-full">
-          {/* Logo y branding */}
-          <div className="p-3 border-b border-gray-800">
-            <div className="flex items-center justify-between">
-              <div className="text-base font-bold">Brújula</div>
-              <div className="text-[10px] bg-gradient-to-r from-blue-500 to-purple-600 py-0.5 px-1.5 rounded-full">Beta</div>
-            </div>
-            <div className="text-[10px] text-gray-400 mt-0.5">Tu guía vocacional inteligente</div>
-          </div>
-          
-          {/* Perfil del usuario */}
-          <div className="p-3 border-b border-gray-800">
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold mr-2">
-                {userName.charAt(0)}
+      {/* Contenedor para posicionar correctamente el sidebar y su botón de toggle */}
+      <div className="flex h-full w-full">
+        {/* Sidebar */}
+        <div className={`
+          fixed md:relative h-full z-50 bg-[#131B2B] border-r border-gray-800
+          transition-all duration-300 ease-in-out
+          ${menuOpen ? 'left-0' : '-left-64'} md:left-0
+          ${sidebarCollapsed ? 'md:w-16' : 'md:w-56'} w-56
+          shrink-0
+        `}>
+          <div className="flex flex-col h-full">
+            {/* Logo y branding */}
+            <div className="p-3 border-b border-gray-800">
+              <div className="flex items-center justify-between">
+                {!sidebarCollapsed && (
+                  <>
+                    <div className="text-base font-bold">Estelar</div>
+                  </>
+                )}
+                {sidebarCollapsed && (
+                  <div className="w-full flex justify-center">
+                    <div className="text-base font-bold">E</div>
+                  </div>
+                )}
               </div>
-              <div>
-                <div className="font-medium text-sm">{userName}</div>
-                <div className="text-[10px] text-gray-400">Plan Gratuito</div>
+              {!sidebarCollapsed && (
+                <div className="text-[10px] text-gray-400 mt-0.5">Descubre lo que te hace único</div>
+              )}
+            </div>
+            
+            {/* Perfil del usuario */}
+            <div className="p-3 border-b border-gray-800">
+              <div className="flex items-center justify-center md:justify-start">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold mr-2">
+                  {userName.charAt(0)}
+                </div>
+                {!sidebarCollapsed && (
+                  <div>
+                    <div className="font-medium text-sm">{userName}</div>
+                    <div className="text-[10px] text-gray-400">Explorador Espacial</div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-          
-          {/* Menú de navegación */}
-          <div className="flex-1 overflow-y-auto py-2">
-            <nav>
-              <ul className="space-y-0.5 px-2">
-                {menuItems.map((item) => (
-                  <li key={item.id}>
-                    {item.id === 'tests' || !('children' in item) ? (
-                      <button
-                        onClick={() => handleMenuClick(item.id, item.url)}
-                        className={`w-full flex items-center py-1.5 px-2 rounded-lg text-left text-xs
-                          ${item.highlight ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 font-medium' : ''}
-                          ${activeSection === item.id && !item.highlight ? 
-                          'bg-[#1D2738] font-medium' : 
-                          !item.highlight ? 'hover:bg-[#1D2738] text-gray-300' : ''}
-                        `}
-                      >
-                        <FontAwesomeIcon 
-                          icon={item.icon} 
-                          className={`mr-2 ${
-                            activeSection === item.id ? 'text-blue-400' : 
-                            item.highlight ? 'text-white' : 'text-gray-500'
-                          }`} 
-                        />
-                        <span>{item.label}</span>
-                      </button>
-                    ) : (
-                      <div>
+            
+            {/* Menú de navegación */}
+            <div className="flex-1 overflow-y-auto py-2">
+              <nav>
+                <ul className="space-y-3 px-2">
+                  {menuItems.map((item) => (
+                    <li key={item.id}>
+                      {item.id === 'tests' || !('children' in item) ? (
                         <button
                           onClick={() => handleMenuClick(item.id)}
-                          className={`w-full flex items-center justify-between py-1.5 px-2 rounded-lg text-left text-xs ${
-                            activeSection === item.id ? 
+                          className={`w-full flex items-center py-2 px-3 rounded-lg text-left text-xs h-10
+                            ${item.highlight ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 font-medium' : ''}
+                            ${activeSection === item.id && !item.highlight ? 
                             'bg-[#1D2738] font-medium' : 
-                            'hover:bg-[#1D2738] text-gray-300'
-                          }`}
+                            !item.highlight ? 'hover:bg-[#1D2738] text-gray-300' : ''}
+                            ${sidebarCollapsed ? 'justify-center' : ''}
+                          `}
+                          title={sidebarCollapsed ? item.label : ''}
                         >
-                          <div className="flex items-center">
-                            <FontAwesomeIcon 
-                              icon={item.icon} 
-                              className={`mr-2 ${activeSection === item.id ? 'text-blue-400' : 'text-gray-500'}`} 
-                            />
-                            <span>{item.label}</span>
-                          </div>
                           <FontAwesomeIcon 
-                            icon={activeSubmenu === item.id ? faChevronDown : faChevronRight} 
-                            className="text-[10px] text-gray-500" 
+                            icon={item.icon} 
+                            className={`${sidebarCollapsed ? '' : 'mr-2'} ${
+                              activeSection === item.id ? 'text-blue-400' : 
+                              item.highlight ? 'text-white' : 'text-gray-500'
+                            } w-4 h-4 flex-shrink-0`} 
                           />
+                          {!sidebarCollapsed && <span>{item.label}</span>}
                         </button>
-                        
-                        {/* Submenú */}
-                        {activeSubmenu === item.id && (
-                          <ul className="ml-7 mt-0.5 space-y-0.5">
-                            {item.children?.map((child) => (
-                              <li key={child.id}>
-                                <button
-                                  onClick={() => router.push(child.url)}
-                                  className={`w-full flex items-center py-1 px-2 rounded-lg text-[11px]
-                                    ${activeSection === child.id ? 
-                                    'bg-blue-900/30 text-blue-300 font-medium' : 
-                                    'text-gray-400 hover:text-gray-200 hover:bg-[#1D2738]'}`}
-                                >
-                                  <span>{child.label}</span>
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </nav>
+                      ) : (
+                        <div>
+                          <button
+                            onClick={() => handleMenuClick(item.id)}
+                            className={`w-full flex items-center justify-between py-2 px-3 rounded-lg text-left text-xs transition-colors duration-200 h-10 ${
+                              activeSection === item.id ? 
+                              'bg-[#1D2738] font-medium' : 
+                              'hover:bg-[#1D2738] text-gray-300'
+                            } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                            title={sidebarCollapsed ? item.label : ''}
+                          >
+                            <div className="flex items-center">
+                              <FontAwesomeIcon 
+                                icon={item.icon} 
+                                className={`${sidebarCollapsed ? '' : 'mr-2'} ${activeSection === item.id ? 'text-blue-400' : 'text-gray-500'} w-4 h-4 flex-shrink-0`} 
+                              />
+                              {!sidebarCollapsed && <span>{item.label}</span>}
+                            </div>
+                            {!sidebarCollapsed && (
+                              <FontAwesomeIcon 
+                                icon={activeSubmenu === item.id ? faChevronDown : faChevronRight} 
+                                className="text-[10px] text-gray-500" 
+                              />
+                            )}
+                          </button>
+                          
+                          {/* Submenú - solo mostrar si no está colapsado */}
+                          {activeSubmenu === item.id && !sidebarCollapsed && (
+                            <ul className="ml-7 mt-0.5 space-y-0.5">
+                              {item.children?.map((child) => (
+                                <li key={child.id}>
+                                  <button
+                                    onClick={() => router.push(child.url)}
+                                    className={`w-full flex items-center py-1 px-2 rounded-lg text-[11px] transition-colors duration-200 h-8
+                                      ${activeSection === child.id ? 
+                                      'bg-blue-900/30 text-blue-300 font-medium' : 
+                                      'text-gray-400 hover:text-gray-200 hover:bg-[#1D2738]'}`}
+                                  >
+                                    <span>{child.label}</span>
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+            
+            {/* Footer del sidebar */}
+            <div className="p-2 border-t border-gray-800">
+              <button 
+                onClick={() => router.push('/logout')}
+                className={`w-full flex items-center p-1.5 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#1D2738] transition-colors duration-200 ${sidebarCollapsed ? 'justify-center' : ''}`}
+                title={sidebarCollapsed ? 'Cerrar sesión' : ''}
+              >
+                <FontAwesomeIcon icon={faSignOutAlt} className={sidebarCollapsed ? '' : 'mr-2'} />
+                {!sidebarCollapsed && <span>Pausar exploración</span>}
+              </button>
+            </div>
           </div>
-          
-          {/* Footer del sidebar */}
-          <div className="p-2 border-t border-gray-800">
-            <button 
-              onClick={() => router.push('/logout')}
-              className="w-full flex items-center p-1.5 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#1D2738]"
-            >
-              <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
-              <span>Cerrar sesión</span>
-            </button>
+        </div>
+        
+        {/* Botón para colapsar/expandir el sidebar (solo visible en desktop) */}
+        <button
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          className="hidden md:flex absolute top-3 left-0 h-6 w-6 items-center justify-center rounded-md text-gray-400 hover:text-white bg-[#131B2B] hover:bg-[#1D2738] transition-colors duration-200 border border-gray-800 z-50"
+          style={{ left: sidebarCollapsed ? '16px' : '224px' }}
+          title={sidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'}
+        >
+          <FontAwesomeIcon icon={sidebarCollapsed ? faChevronRight : faChevronLeft} className="text-xs" />
+        </button>
+        
+        {/* Contenido principal */}
+        <div className="flex-1 flex flex-col h-screen overflow-y-auto pt-14 md:pt-0 w-full max-w-full">
+          {/* Contenido del dashboard aquí */}
+          <div className="flex-1 bg-gradient-to-b from-[#181F2B] to-[#0B1120] p-4 md:p-8 relative">
+            {/* Fondo espacial */}
+            <div className="absolute inset-0 overflow-hidden z-0">
+              {/* Estrellas */}
+              <div className="stars"></div>
+              {/* Nebulosas */}
+              <div className="absolute top-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-purple-900/30 blur-3xl"></div>
+              <div className="absolute bottom-1/4 -left-1/4 w-2/3 h-2/3 rounded-full bg-blue-900/20 blur-3xl"></div>
+            </div>
+            
+            {/* Header de la página */}
+            <div className="relative z-10 mb-6">
+              <h1 className="text-2xl md:text-3xl font-bold">Hola {userName}, ¡bienvenido de vuelta!</h1>
+              <p className="text-gray-400">Continuemos tu viaje de autodescubrimiento</p>
+            </div>
+            
+            {/* Contenido del dashboard - Se renderizará según la sección activa */}
+            <div className="relative z-10">
+              {renderContent()}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Contenido principal */}
-      <div className="flex-1 flex flex-col h-screen overflow-y-auto pt-14 md:pt-0">
-        {/* Contenido del dashboard aquí */}
-        <div className="flex-1 bg-gradient-to-b from-[#181F2B] to-[#0B1120] p-4 md:p-8 relative">
-          {/* Fondo espacial */}
-          <div className="absolute inset-0 overflow-hidden z-0">
-            {/* Estrellas */}
-            <div className="stars"></div>
-            {/* Nebulosas */}
-            <div className="absolute top-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-purple-900/30 blur-3xl"></div>
-            <div className="absolute bottom-1/4 -left-1/4 w-2/3 h-2/3 rounded-full bg-blue-900/20 blur-3xl"></div>
-          </div>
-          
-          {/* Header de la página */}
-          <div className="relative z-10 mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold">Bienvenido de nuevo, {userName}</h1>
-            <p className="text-gray-400">Continúa tu viaje de descubrimiento profesional</p>
-          </div>
-          
-          {/* Contenido del dashboard - Se renderizará según la sección activa */}
-          <div className="relative z-10">
-            {renderContent()}
-          </div>
-        </div>
-      </div>
-
-      {/* Estilos CSS para el fondo espacial */}
+      {/* Estilos CSS simplificados */}
       <style jsx>{`
         .stars {
           position: fixed;
@@ -549,3 +663,4 @@ export default function Home() {
     </div>
   );
 }
+

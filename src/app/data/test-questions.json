@@ -4,7 +4,7 @@
       "id": 1,
       "name": "Test de Intereses Personales",
       "description": "Este test evalúa tus intereses y preferencias personales",
-      "route": "/test/intereses-personales",
+      "route": "intereses-personales",
       "questions": [
         {
           "id": 1,
@@ -32,7 +32,7 @@
       "id": 2,
       "name": "Test de Habilidades de Resolución",
       "description": "Este test evalúa tu forma de abordar y resolver problemas",
-      "route": "/test/habilidades-resolucion",
+      "route": "habilidades-resolucion",
       "questions": [
         {
           "id": 1,
@@ -60,7 +60,7 @@
       "id": 3,
       "name": "Test de Ambiente de Trabajo",
       "description": "Este test evalúa tus preferencias en el entorno laboral",
-      "route": "/test/ambiente-trabajo",
+      "route": "ambiente-trabajo",
       "questions": [
         {
           "id": 1,
@@ -88,7 +88,7 @@
       "id": 4,
       "name": "Test de Valores Profesionales",
       "description": "Este test evalúa tus valores y aspiraciones profesionales",
-      "route": "/test/valores-profesionales",
+      "route": "personal-values",
       "questions": [
         {
           "id": 1,
